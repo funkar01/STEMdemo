@@ -7,6 +7,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] Transform meterNeedle;
     [SerializeField] TMP_Text speedText;
     string speed;
+    bool isNeedleMoving = false;
     Coroutine needleCoroutine;
     [SerializeField] float needleLerpDuration = 0.25f;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -27,19 +28,27 @@ public class UIManager : MonoBehaviour
             float targetRotation = currentRotation;
             if (isIncreased)
             {
+                //if (currentRotation <= 150f)
                 if (currentRotation < 180f)
                     targetRotation = currentRotation + 30f;
             }
             else
             {
-                if (currentRotation > 0f)
+                if (currentRotation >= 30f)
+                    //if (currentRotation > 0f )
                     targetRotation = currentRotation - 30f;
             }
 
-            // stop any existing lerp and start a new one
-            if (needleCoroutine != null)
-                StopCoroutine(needleCoroutine);
-            needleCoroutine = StartCoroutine(LerpNeedle(currentRotation, targetRotation, needleLerpDuration));
+            if (isNeedleMoving == false)
+            {
+                this.GetComponent<SpeedController>().UpdateMotorSpeed(isIncreased);
+
+                // stop any existing lerp and start a new one
+                if (needleCoroutine != null)
+                    StopCoroutine(needleCoroutine);
+                isNeedleMoving = true;
+                needleCoroutine = StartCoroutine(LerpNeedle(currentRotation, targetRotation, needleLerpDuration));
+            }
         }
 
         speed = "Speed: " + this.GetComponent<SpeedController>().speed.ToString("0");
@@ -64,6 +73,7 @@ public class UIManager : MonoBehaviour
             yield return null;
         }
         meterNeedle.localRotation = Quaternion.Euler(0f, 0f, to);
+        isNeedleMoving = false;
         needleCoroutine = null;
     }
 }
